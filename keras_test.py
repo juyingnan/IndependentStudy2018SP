@@ -18,7 +18,7 @@ class AccuracyHistory(keras.callbacks.Callback):
         self.acc.append(logs.get('acc'))
 
 
-def read_img_random(path, total_count, size_filter=2000):
+def read_img_random(path, total_count, size_filter=3000):
     cate = [path + folder for folder in os.listdir(path) if os.path.isdir(path + folder)]
     imgs = []
     labels = []
@@ -27,8 +27,12 @@ def read_img_random(path, total_count, size_filter=2000):
         count = 0
         file_path_list = [os.path.join(folder, file_name) for file_name in os.listdir(folder)
                           if os.path.isfile(os.path.join(folder, file_name))]
-        while count < total_count:
-            im = random.choice(file_path_list)
+        # print(file_path_list[0:3])
+        random.shuffle(file_path_list)
+        # print(file_path_list[0:3])
+        while count < total_count and count < len(file_path_list):
+            im = file_path_list[count]
+            count += 1
             file_info = os.stat(im)
             file_size = file_info.st_size
             if file_size < size_filter:
@@ -40,13 +44,13 @@ def read_img_random(path, total_count, size_filter=2000):
                 continue
             imgs.append(img)
             labels.append(idx)
-            count += 1
-            print("\rreading {0}/{1}".format(count, total_count), end='')
+            if count % 100 == 0:
+                print("\rreading {0}/{1}".format(count, min(total_count, len(file_path_list))), end='')
         print('\r', end='')
     return np.asarray(imgs, np.float32), np.asarray(labels, np.int32)
 
 
-def read_img(path, total_count, size_filter=2000):
+def read_img(path, total_count, size_filter=4000):
     cate = [path + folder for folder in os.listdir(path) if os.path.isdir(path + folder)]
     images = []
     labels = []
@@ -77,18 +81,20 @@ def read_img(path, total_count, size_filter=2000):
     return np.asarray(images, np.float32), np.asarray(labels, np.int32)
 
 
-w = 100
-h = 100
+w = 224
+h = 224
 c = 3
-image_count = 10000
+train_image_count = 1000
+test_image_count = train_image_count / 10
 input_shape = (w, h, c)
 learning_rate = 0.0001
 regularization_rate = 0.0001
-category_count = 8
-n_epoch = 200
-mini_batch_size = 100
+category_count = 11
+n_epoch = 50
+mini_batch_size = 64
 # data set path
-image_path = 'c:/Users/bunny/Desktop/dataset2/data_50000/'
+train_path = 'c:/Users/bunny/Desktop/d3_ma/train/'
+test_path = 'c:/Users/bunny/Desktop/d3_ma/test/'
 
 model = Sequential()
 
@@ -98,11 +104,11 @@ model.add(Conv2D(32,
                  strides=(1, 1),
                  activation='relu',
                  input_shape=input_shape))
-model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+model.add(MaxPooling2D(pool_size=(4, 4), strides=(4, 4)))
 
 # Layer 2
 model.add(Conv2D(64, (3, 3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(MaxPooling2D(pool_size=(4, 4)))
 
 # Layer 3
 model.add(Conv2D(128, (3, 3), activation='relu'))
@@ -116,28 +122,18 @@ model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Flatten(input_shape=input_shape))
 
 # fc layers
-model.add(Dense(512, activation='relu', kernel_regularizer=regularizers.l2(regularization_rate)))
+model.add(Dense(256, activation='relu', kernel_regularizer=regularizers.l2(regularization_rate)))
 model.add(Dense(64, activation='relu', kernel_regularizer=regularizers.l2(regularization_rate)))
 model.add(Dense(category_count, activation='softmax', kernel_regularizer=regularizers.l2(regularization_rate)))
 
 # read image
-data, label = read_img_random(image_path, image_count)
+train_data, train_label = read_img_random(train_path, train_image_count)
+test_data, test_label = read_img_random(test_path, test_image_count)
 
-# shuffle
-num_example = data.shape[0]
-arr = np.arange(num_example)
-np.random.shuffle(arr)
-data = data[arr]
-label = label[arr]
-
-# divide into train set and test set
-ratio = 0.9
-s = np.int(num_example * ratio)
-data /= 255
-x_train = data[:s]
-y_train = label[:s]
-x_val = data[s:]
-y_val = label[s:]
+x_train = train_data
+y_train = train_label
+x_val = test_data
+y_val = test_label
 
 # reshape the data into a 4D tensor - (sample_number, x_img_size, y_img_size, num_channels)
 # because the MNIST is greyscale, we only have a single channel - RGB colour images would have 3
@@ -172,7 +168,7 @@ model.fit(x_train, y_train,
           verbose=2,
           validation_data=(x_val, y_val),
           callbacks=[history])
-model.save_weights(image_path+'/model.h5')
+model.save_weights(train_path + '/model.h5')
 score = model.evaluate(x_val, y_val, verbose=1)
 print('Test loss:', score[0])
 print('Test accuracy:', score[1])
