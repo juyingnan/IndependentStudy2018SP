@@ -85,13 +85,4 @@ for blobs, color, title in zip(blobs_list, colors, titles):
 ax[2].set_axis_off()
 
 plt.tight_layout()
-
-fig, ax = plt.subplots(figsize=(10, 10))
-imgplot = plt.imshow(zdh)
-for blobs, color, title in zip(blobs_list, colors, titles):
-    for blob in blobs:
-        y, x, r = blob
-        c = plt.Circle((x, y), r, color=color, linewidth=1, fill=False)
-        ax.add_patch(c)
-plt.tight_layout()
 plt.show()
