@@ -8,10 +8,10 @@ def write_csv(path, list_of_columns, list_of_names=None):
     with open(path, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         if list_of_names is not None:
-            writer.writerow((list_of_names))
+            writer.writerow(list_of_names)
         lines = []
-        for i in range(len(list_of_columns[0])):
-            lines.append([column[i] for column in list_of_columns])
+        for _i in range(len(list_of_columns[0])):
+            lines.append([column[_i] for column in list_of_columns])
         writer.writerows(lines)
 
 
@@ -46,7 +46,7 @@ for i in range(len(shapes)):
 vessel_x_list = list()
 vessel_y_list = list()
 
-vessel_image = io.imread(r'C:\Users\bunny\Desktop\vessles.png')  # [::-1, :]
+vessel_image = io.imread('../images/vessles.png')  # [::-1, :]
 for i in range(len(vessel_image)):
     row = vessel_image[i]
     for j in range(len(row)):
@@ -56,12 +56,12 @@ for i in range(len(vessel_image)):
             vessel_x_list.append(j / pixel_per_um)
 print(len(vessel_x_list))
 
-for id in nuclei_id_list:
+for nid in nuclei_id_list:
     _min_dist = 50
     _min_vessel_x = 0
     _min_vessel_y = 0
-    _nx = nuclei_x_list[id]
-    _ny = nuclei_y_list[id]
+    _nx = nuclei_x_list[nid]
+    _ny = nuclei_y_list[nid]
     for v in range(len(vessel_x_list)):
         _vx = vessel_x_list[v]
         _vy = vessel_y_list[v]
@@ -74,8 +74,8 @@ for id in nuclei_id_list:
     nuclei_distance_list.append(_min_dist)
     nuclei_nearest_vessel_x_list.append(_min_vessel_x)
     nuclei_nearest_vessel_y_list.append(_min_vessel_y)
-    if id % 10 == 0:
-        print('\r' + str(id), end='')
+    if nid % 10 == 0:
+        print('\r' + str(nid), end='')
 
 print(len(nuclei_id_list), len(nuclei_x_list), len(nuclei_y_list), len(nuclei_distance_list),
       len(nuclei_nearest_vessel_x_list), len(nuclei_nearest_vessel_y_list))
@@ -93,9 +93,9 @@ write_csv('../csv/vessel.csv',
           [vessel_x_list, vessel_y_list],
           ['x', 'y'])
 
-import matplotlib.pyplot as plt
-
-# plt.scatter(vessel_x_list, vessel_y_list, c='r')
-# plt.scatter(nuclei_x_list, nuclei_y_list, c='b')
-plt.hist(nuclei_distance_list, bins=100)
-plt.show()
+# import matplotlib.pyplot as plt
+#
+# # plt.scatter(vessel_x_list, vessel_y_list, c='r')
+# # plt.scatter(nuclei_x_list, nuclei_y_list, c='b')
+# plt.hist(nuclei_distance_list, bins=100)
+# plt.show()
