@@ -15,14 +15,14 @@ def write_csv(path, list_of_columns, list_of_names=None):
         writer.writerows(lines)
 
 
-prs = Presentation(r'C:\Users\bunny\Desktop\KidneyAnnotated-GW.pptx')
-print(prs.slide_height, prs.slide_width)
-slide = prs.slides[0]
-
-shapes = slide.shapes
-
-print(len(shapes))
-
+# prs = Presentation(r'C:\Users\bunny\Desktop\KidneyAnnotated-GW.pptx')
+# print(prs.slide_height, prs.slide_width)
+# slide = prs.slides[0]
+#
+# shapes = slide.shapes
+#
+# print(len(shapes))
+#
 unit_per_um = 1024646 / 50
 unit_per_pixel = 28346400 / 2232
 pixel_per_um = unit_per_um / unit_per_pixel
@@ -33,15 +33,34 @@ nuclei_y_list = list()
 nuclei_distance_list = list()
 nuclei_nearest_vessel_x_list = list()
 nuclei_nearest_vessel_y_list = list()
+#
+# for i in range(len(shapes)):
+#     shape = shapes[i]
+#     x = (shape.left + shape.width / 2) / unit_per_um
+#     y = (shape.top + shape.height / 2) / unit_per_um
+#     # print(x, y, shape.left, shape.width, shape.top, shape.height)
+#     nuclei_x_list.append(x)
+#     nuclei_y_list.append(y)
+#     nuclei_id_list.append(i)
 
-for i in range(len(shapes)):
-    shape = shapes[i]
-    x = (shape.left + shape.width / 2) / unit_per_um
-    y = (shape.top + shape.height / 2) / unit_per_um
-    # print(x, y, shape.left, shape.width, shape.top, shape.height)
-    nuclei_x_list.append(x)
-    nuclei_y_list.append(y)
-    nuclei_id_list.append(i)
+nuclei_image = io.imread('../images/nuclei_ml.png')  # [::-1, :]
+_nid = 0
+for i in range(len(nuclei_image)):
+    row = nuclei_image[i]
+    for j in range(len(row)):
+        pixel = row[j]
+        if pixel[0] > 200:
+            # each nuclear is 2x2 pixels
+            # get the average (+0.5)
+            # and erase other 3 points
+            nuclei_y_list.append((i + 0.5) / pixel_per_um)
+            nuclei_x_list.append((j + 0.5) / pixel_per_um)
+            nuclei_image[i][j + 1] *= 0
+            nuclei_image[i + 1][j] *= 0
+            nuclei_image[i + 1][j + 1] *= 0
+            nuclei_id_list.append(_nid)
+            _nid += 1
+print(len(nuclei_x_list))
 
 vessel_x_list = list()
 vessel_y_list = list()
@@ -57,7 +76,7 @@ for i in range(len(vessel_image)):
 print(len(vessel_x_list))
 
 for nid in nuclei_id_list:
-    _min_dist = 50
+    _min_dist = 100
     _min_vessel_x = 0
     _min_vessel_y = 0
     _nx = nuclei_x_list[nid]
@@ -80,7 +99,7 @@ for nid in nuclei_id_list:
 print(len(nuclei_id_list), len(nuclei_x_list), len(nuclei_y_list), len(nuclei_distance_list),
       len(nuclei_nearest_vessel_x_list), len(nuclei_nearest_vessel_y_list))
 
-write_csv('../csv/nuclei.csv',
+write_csv('../csv/nuclei_ml.csv',
           [nuclei_id_list,
            nuclei_x_list,
            nuclei_y_list,
@@ -93,9 +112,9 @@ write_csv('../csv/vessel.csv',
           [vessel_x_list, vessel_y_list],
           ['x', 'y'])
 
-# import matplotlib.pyplot as plt
-#
-# # plt.scatter(vessel_x_list, vessel_y_list, c='r')
-# # plt.scatter(nuclei_x_list, nuclei_y_list, c='b')
-# plt.hist(nuclei_distance_list, bins=100)
-# plt.show()
+import matplotlib.pyplot as plt
+
+# plt.scatter(vessel_x_list, vessel_y_list, c='r')
+# plt.scatter(nuclei_x_list, nuclei_y_list, c='b')
+plt.hist(nuclei_distance_list, bins=100)
+plt.show()
