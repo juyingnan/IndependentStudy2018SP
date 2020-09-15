@@ -56,17 +56,19 @@ if __name__ == '__main__':
         ("positive", "#aeaeb8"),
     ])
 
-    p = figure(plot_width=3727, plot_height=2348, title='nuclei/vessel distance', match_aspect=True,
+    p = figure(match_aspect=True,
+               plot_width=int(3727 * 1.075), plot_height=int(2348 * 1.075),
                tools=tools_list,
-
+               # title='nuclei/vessel distance',
                )
 
     p.xgrid.visible = False
     p.ygrid.visible = False
-    # p.axis.visible = False
+    p.axis.visible = False
     p.background_fill_alpha = 0.0
-    # p.outline_line_color = None
+    p.outline_line_color = None
 
+    p.image_url(url=[r'C:\Users\bunny\Desktop\Region_6\w2.png'], x=0, y=0, anchor="bottom_left")
     v_headers, v_columns = read_csv(vessel_file_path)
     for i in range(0, len(v_headers)):
         v_columns[v_headers[i]] = [float(value) for value in v_columns[v_headers[i]]]
@@ -93,9 +95,9 @@ if __name__ == '__main__':
     n_df = pd.DataFrame(data)
 
     p.segment(x0='x', y0='y', x1='vx', source=n_df, y1='vy', color="#CAB2D6", line_width=2)
-    circle = p.circle(x='x', y='y', source=n_df, color='blue', alpha='alpha', size=4)
-    g1_hover = HoverTool(renderers=[circle], tooltips=[('X', "@x"), ('Y', "@y"), ('distance', "@distance")])
-    p.add_tools(g1_hover)
+    # circle = p.circle(x='x', y='y', source=n_df, color='blue', alpha='alpha', size=4)
+    # g1_hover = HoverTool(renderers=[circle], tooltips=[('X', "@x"), ('Y', "@y"), ('distance', "@distance")])
+    # p.add_tools(g1_hover)
 
     # p.legend.location = "bottom_right"
 
