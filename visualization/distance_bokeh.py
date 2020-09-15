@@ -95,9 +95,9 @@ if __name__ == '__main__':
     n_df = pd.DataFrame(data)
 
     p.segment(x0='x', y0='y', x1='vx', source=n_df, y1='vy', color="#CAB2D6", line_width=2)
-    # circle = p.circle(x='x', y='y', source=n_df, color='blue', alpha='alpha', size=4)
-    # g1_hover = HoverTool(renderers=[circle], tooltips=[('X', "@x"), ('Y', "@y"), ('distance', "@distance")])
-    # p.add_tools(g1_hover)
+    circle = p.circle(x='x', y='y', source=n_df, color='blue', alpha='alpha', size=4)
+    g1_hover = HoverTool(renderers=[circle], tooltips=[('X', "@x"), ('Y', "@y"), ('distance', "@distance")])
+    p.add_tools(g1_hover)
 
     # p.legend.location = "bottom_right"
 
