@@ -63,9 +63,10 @@ for i in range(0, 3):  # len(n_headers)):
     n_columns[n_headers[i]] = [float(value) for value in n_columns[n_headers[i]]]
 n_columns['Y'] = [float(value) for value in n_columns['Y']]
 
-nuclei_x_list = [float(value / 2) for value in n_columns['Y'][::2]]
-nuclei_y_list = [float(value / 2) for value in n_columns['X'][::2]]
-nuclei_id_list = [int(value) for value in n_columns['Cell ID'][::2]]
+nuclei_x_list = [float(value / 2) for value in n_columns['Y']]
+nuclei_y_list = [float(value / 2) for value in n_columns['X']]
+nuclei_id_list = [int(value) for value in n_columns['Cell ID']]
+nuclei_class_list = [int(value) for value in n_columns['Class']]
 
 # nuclei_image = io.imread('../images/nuclei_ml.png')  # [::-1, :]
 # _nid = 0
@@ -94,7 +95,7 @@ for i in range(len(vessel_image)):
     row = vessel_image[i]
     for j in range(len(row)):
         pixel = row[j]
-        if pixel[0] > 200:
+        if pixel > 200:  # if pixel[0] > 200:
             vessel_y_list.append(i)
             vessel_x_list.append(j)
 print(len(vessel_x_list))
@@ -141,10 +142,11 @@ write_csv('../csv/nuclei_GE.csv',
           [nuclei_id_list,
            nuclei_x_list,
            nuclei_y_list,
+           nuclei_class_list,
            nuclei_distance_list,
            nuclei_nearest_vessel_x_list,
            nuclei_nearest_vessel_y_list],
-          ['id', 'x', 'y', 'distance', 'vx', 'vy'])
+          ['id', 'x', 'y', 'class', 'distance', 'vx', 'vy'])
 
 write_csv('../csv/vessel_GE.csv',
           [vessel_x_list, vessel_y_list],
