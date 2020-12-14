@@ -3,6 +3,11 @@ import math
 import csv
 import os
 import sys
+import random
+import matplotlib.pyplot as plt
+
+
+# from mpl_toolkits.mplot3d import Axes3D
 
 
 def write_csv(path, list_of_columns, list_of_names=None):
@@ -25,9 +30,9 @@ def read_csv(path):
         _columns = {}
         for h in _headers:
             _columns[h] = []
-        for row in reader:
-            for h, v in zip(_headers, row):
-                _columns[h].append(v)
+        for _row in reader:
+            for _h, _v in zip(_headers, _row):
+                _columns[_h].append(_v)
 
         for item in _headers:
             print(item)
@@ -56,12 +61,18 @@ nuclei_nearest_vessel_y_list = list()
 nuclei_nearest_vessel_z_list = list()
 
 input_id = 86
+CD_index = 3
+CD_str = f'CD{CD_index}_'
+if CD_index == 0:
+    CD_str = ""
 index = 1
 if len(sys.argv) >= 2:
     input_id = sys.argv[1]
 
-nuclei_root_path = r'G:\GE\HubmapDemoDay_Dec14th_2020_Vessel_Nuclei_Segmentation_NucleiQuantification\NucleiQuantification'
-nuclei_file_name = rf'quant_slide{str(input_id)}_region6.csv'
+nuclei_root_path = \
+    r'G:\GE\HubmapDemoDay_Dec14th_2020_Vessel_Nuclei_Segmentation_NucleiQuantification\NucleiQuantification'
+nuclei_file_name = rf'{CD_str}quant_slide{input_id}_region6.csv'
+# nuclei_file_name = rf'quant_slide{input_id}_region6.csv'
 
 nuclei_file_path = os.path.join(nuclei_root_path, nuclei_file_name)
 
@@ -72,7 +83,7 @@ top_left = [5350, 3900]
 bottom_right = [7150, 4700]
 
 n_headers, n_columns = read_csv(nuclei_file_path)
-for i in range(0, 3):  # len(n_headers)):
+for i in range(0, 7):  # len(n_headers)):
     n_columns[n_headers[i]] = [float(value) for value in n_columns[n_headers[i]]]
 n_columns['Y'] = [float(value) for value in n_columns['Y']]
 
@@ -80,14 +91,20 @@ full_nuclei_x_list = [float(value / index) for value in n_columns['Y']]
 full_nuclei_y_list = [float(value / index) for value in n_columns['X']]
 full_nuclei_id_list = [int(value) for value in n_columns['Cell ID']]
 
-nuclei_x_list = []
-nuclei_y_list = []
-nuclei_id_list = []
-for i in range(len(full_nuclei_x_list)):
-    if top_left[0] < full_nuclei_x_list[i] < bottom_right[0] and top_left[1] < full_nuclei_y_list[i] < bottom_right[1]:
-        nuclei_x_list.append(full_nuclei_x_list[i] - top_left[0])
-        nuclei_y_list.append(full_nuclei_y_list[i] - top_left[1])
-        nuclei_id_list.append(full_nuclei_id_list[i])
+if CD_index == 0:
+    nuclei_x_list = []
+    nuclei_y_list = []
+    nuclei_id_list = []
+    for i in range(len(full_nuclei_x_list)):
+        if top_left[0] < full_nuclei_x_list[i] < bottom_right[0] and \
+                top_left[1] < full_nuclei_y_list[i] < bottom_right[1]:
+            nuclei_x_list.append(full_nuclei_x_list[i] - top_left[0])
+            nuclei_y_list.append(full_nuclei_y_list[i] - top_left[1])
+            nuclei_id_list.append(full_nuclei_id_list[i])
+else:
+    nuclei_x_list = full_nuclei_x_list
+    nuclei_y_list = full_nuclei_y_list
+    nuclei_id_list = full_nuclei_id_list
 
 # nuclei_class_list = [int(value) for value in n_columns['Class']]
 
@@ -113,8 +130,9 @@ print(len(nuclei_x_list))
 vessel_x_list = list()
 vessel_y_list = list()
 
-vessel_root_path = r'G:\GE\HubmapDemoDay_Dec14th_2020_Vessel_Nuclei_Segmentation_NucleiQuantification\VesselSegmentation'
-vessel_image_file_name = rf'CD31_S{str(input_id)}_AFRemoved_pyr16_region_006_Vessel_Prob_p.tif'
+vessel_root_path = \
+    r'G:\GE\HubmapDemoDay_Dec14th_2020_Vessel_Nuclei_Segmentation_NucleiQuantification\VesselSegmentation'
+vessel_image_file_name = rf'CD31_S{input_id}_AFRemoved_pyr16_region_006_Vessel_Prob_p.tif'
 vessel_image_path = os.path.join(vessel_root_path, vessel_image_file_name)
 if len(sys.argv) >= 4:
     vessel_image_path = sys.argv[3]
@@ -145,8 +163,6 @@ write_csv(nuclei_output_path,
 write_csv(vessel_output_path,
           [vessel_x_list, vessel_y_list],
           ['x', 'y'])
-
-import random
 
 max_z = 308
 
@@ -201,9 +217,6 @@ write_csv(nuclei_output_path,
 write_csv(vessel_output_path,
           [vessel_x_list, vessel_y_list],
           ['x', 'y'])
-
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 fig = plt.figure(figsize=(20, 20))
 ax = fig.add_subplot(111, projection='3d')
