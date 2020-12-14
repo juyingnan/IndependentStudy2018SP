@@ -53,6 +53,7 @@ nuclei_y_list = list()
 nuclei_distance_list = list()
 nuclei_nearest_vessel_x_list = list()
 nuclei_nearest_vessel_y_list = list()
+nuclei_nearest_vessel_z_list = list()
 
 input_id = 86
 index = 1
@@ -118,7 +119,7 @@ vessel_image_path = os.path.join(vessel_root_path, vessel_image_file_name)
 if len(sys.argv) >= 4:
     vessel_image_path = sys.argv[3]
 
-vessel_image = io.imread(vessel_image_path)[top_left[0]:bottom_right[0], top_left[1]:bottom_right[1]]  # [::-1, :]
+vessel_image = io.imread(vessel_image_path)[top_left[1]:bottom_right[1], top_left[0]:bottom_right[0]]  # [::-1, :]
 
 for i in range(len(vessel_image)):
     row = vessel_image[i]
@@ -145,28 +146,40 @@ write_csv(vessel_output_path,
           [vessel_x_list, vessel_y_list],
           ['x', 'y'])
 
+import random
+
+max_z = 308
+
+nuclei_z_list = [random.randint(0, max_z) for i in range(len(nuclei_x_list))]
+vessel_z_list = [random.randint(0, max_z) for i in range(len(vessel_x_list))]
+
 for nid in range(len(nuclei_id_list)):
     _min_dist = 1600 / index
     _min_vessel_x = 0
     _min_vessel_y = 0
+    _min_vessel_z = 0
     _nx = nuclei_x_list[nid]
     _ny = nuclei_y_list[nid]
+    _nz = nuclei_z_list[nid]
     _has_near = False
     for v in range(len(vessel_x_list)):
         _vx = vessel_x_list[v]
         _vy = vessel_y_list[v]
+        _vz = vessel_z_list[v]
         if abs(_nx - _vx) < _min_dist and abs(_ny - _vy) < _min_dist:
-            _dist = math.sqrt((_nx - _vx) ** 2 + (_ny - _vy) ** 2)
+            _dist = math.sqrt((_nx - _vx) ** 2 + (_ny - _vy) ** 2 + (_nz - _vz) ** 2)
             if _dist < _min_dist:
                 _has_near = True
                 _min_dist = _dist
                 _min_vessel_x = _vx
                 _min_vessel_y = _vy
+                _min_vessel_z = _vz
     if not _has_near:
         print("NO NEAR")
     nuclei_distance_list.append(_min_dist)
     nuclei_nearest_vessel_x_list.append(_min_vessel_x)
     nuclei_nearest_vessel_y_list.append(_min_vessel_y)
+    nuclei_nearest_vessel_z_list.append(_min_vessel_z)
     if nid % 100 == 0:
         print('\r' + str(nid), end='')
 
@@ -190,6 +203,30 @@ write_csv(vessel_output_path,
           ['x', 'y'])
 
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+fig = plt.figure(figsize=(20, 20))
+ax = fig.add_subplot(111, projection='3d')
+ax._axis3don = False
+
+color_max = max(nuclei_distance_list)
+colors = ['#%02x%02x%02x' % (0, int(255 * value / color_max), int(255 * (color_max - value) / color_max))
+          for value in nuclei_distance_list]
+
+ax.scatter(nuclei_x_list, nuclei_y_list, nuclei_z_list, color=colors, marker="o", s=15)
+ax.scatter(vessel_x_list, vessel_y_list, vessel_z_list, color='brown', marker=".", s=0.1)
+
+for i in range(len(nuclei_id_list)):
+    ax.plot([nuclei_x_list[i], nuclei_nearest_vessel_x_list[i]],
+            [nuclei_y_list[i], nuclei_nearest_vessel_y_list[i]],
+            [nuclei_z_list[i], nuclei_nearest_vessel_z_list[i]],
+            color='r', linewidth=0.1)
+
+ax.set_xlim3d(0, 1500)
+ax.set_ylim3d(0, 1500)
+ax.set_zlim3d(0, 1500)
+
+plt.show()
 
 # plt.scatter(vessel_x_list, vessel_y_list, c='r')
 # plt.scatter(nuclei_x_list, nuclei_y_list, c='b')
