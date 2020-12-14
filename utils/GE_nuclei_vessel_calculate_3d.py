@@ -54,7 +54,8 @@ nuclei_distance_list = list()
 nuclei_nearest_vessel_x_list = list()
 nuclei_nearest_vessel_y_list = list()
 
-input_id = 78
+input_id = 86
+index = 1
 if len(sys.argv) >= 2:
     input_id = sys.argv[1]
 
@@ -66,14 +67,27 @@ nuclei_file_path = os.path.join(nuclei_root_path, nuclei_file_name)
 if len(sys.argv) >= 3:
     nuclei_file_path = sys.argv[2]
 
+top_left = [5350, 3900]
+bottom_right = [7150, 4700]
+
 n_headers, n_columns = read_csv(nuclei_file_path)
 for i in range(0, 3):  # len(n_headers)):
     n_columns[n_headers[i]] = [float(value) for value in n_columns[n_headers[i]]]
 n_columns['Y'] = [float(value) for value in n_columns['Y']]
 
-nuclei_x_list = [float(value / 2) for value in n_columns['Y']]
-nuclei_y_list = [float(value / 2) for value in n_columns['X']]
-nuclei_id_list = [int(value) for value in n_columns['Cell ID']]
+full_nuclei_x_list = [float(value / index) for value in n_columns['Y']]
+full_nuclei_y_list = [float(value / index) for value in n_columns['X']]
+full_nuclei_id_list = [int(value) for value in n_columns['Cell ID']]
+
+nuclei_x_list = []
+nuclei_y_list = []
+nuclei_id_list = []
+for i in range(len(full_nuclei_x_list)):
+    if top_left[0] < full_nuclei_x_list[i] < bottom_right[0] and top_left[1] < full_nuclei_y_list[i] < bottom_right[1]:
+        nuclei_x_list.append(full_nuclei_x_list[i] - top_left[0])
+        nuclei_y_list.append(full_nuclei_y_list[i] - top_left[1])
+        nuclei_id_list.append(full_nuclei_id_list[i])
+
 # nuclei_class_list = [int(value) for value in n_columns['Class']]
 
 # nuclei_image = io.imread('../images/nuclei_ml.png')  # [::-1, :]
@@ -99,18 +113,18 @@ vessel_x_list = list()
 vessel_y_list = list()
 
 vessel_root_path = r'G:\GE\HubmapDemoDay_Dec14th_2020_Vessel_Nuclei_Segmentation_NucleiQuantification\VesselSegmentation'
-vessel_image_file_name = rf'CD31_S{str(input_id)}_AFRemoved_pyr16_region_006_Vessel_Prob.bmp'
+vessel_image_file_name = rf'CD31_S{str(input_id)}_AFRemoved_pyr16_region_006_Vessel_Prob_p.tif'
 vessel_image_path = os.path.join(vessel_root_path, vessel_image_file_name)
 if len(sys.argv) >= 4:
     vessel_image_path = sys.argv[3]
 
-vessel_image = io.imread(vessel_image_path)  # [::-1, :]
+vessel_image = io.imread(vessel_image_path)[top_left[0]:bottom_right[0], top_left[1]:bottom_right[1]]  # [::-1, :]
 
 for i in range(len(vessel_image)):
     row = vessel_image[i]
     for j in range(len(row)):
         pixel = row[j]
-        if pixel[0] > 200:  # if pixel[0] > 200:
+        if pixel[0] < 100:  # if pixel[0] > 200:
             vessel_y_list.append(i)
             vessel_x_list.append(j)
 print(len(vessel_x_list))
@@ -132,7 +146,7 @@ write_csv(vessel_output_path,
           ['x', 'y'])
 
 for nid in range(len(nuclei_id_list)):
-    _min_dist = 800
+    _min_dist = 1600 / index
     _min_vessel_x = 0
     _min_vessel_y = 0
     _nx = nuclei_x_list[nid]
@@ -168,7 +182,7 @@ write_csv(nuclei_output_path,
            nuclei_nearest_vessel_x_list,
            nuclei_nearest_vessel_y_list],
           ['id', 'x', 'y',
-           #'class',
+           # 'class',
            'distance', 'vx', 'vy'])
 
 write_csv(vessel_output_path,

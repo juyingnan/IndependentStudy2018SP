@@ -1,5 +1,6 @@
 import csv
 import os
+import sys
 import pandas as pd
 from collections import OrderedDict
 from bokeh.io import show, output_file
@@ -37,11 +38,15 @@ if __name__ == '__main__':
                  "help"
     # "hover," \
 
-    root_path = r'../csv'
-    nuclei_file_name = 'nuclei_GE.csv'
-    vessel_file_name = 'vessel_GE.csv'
-    nuclei_file_path = os.path.join(root_path, nuclei_file_name)
-    vessel_file_path = os.path.join(root_path, vessel_file_name)
+    input_id = 78
+    if len(sys.argv) >= 2:
+        input_id = sys.argv[1]
+    nuclei_file_name = rf'quant_slide{str(input_id)}_region6.csv'
+    output_root_path = r'G:\GE\HubmapDemoDay_Dec14th_2020_Vessel_Nuclei_Segmentation_NucleiQuantification\output'
+    nuclei_output_name = nuclei_file_name.replace('region6', 'region6_nuclei')
+    nuclei_file_path = os.path.join(output_root_path, nuclei_output_name)
+    vessel_output_name = nuclei_file_name.replace('region6', 'region6_vessel')
+    vessel_file_path = os.path.join(output_root_path, vessel_output_name)
 
     output_file("result/distance.html")
 
@@ -68,7 +73,9 @@ if __name__ == '__main__':
     p.background_fill_alpha = 0.0
     p.outline_line_color = None
 
-    p.image_url(url=[r'C:\Users\bunny\Desktop\Region_6\w2.png'], x=0, y=0, anchor="bottom_left")
+    p.image_url(url=[
+        rf'G:\GE\HubmapDemoDay_Dec14th_2020_Vessel_Nuclei_Segmentation_NucleiQuantification\output\dapi_Slide{str(input_id)}_region6_nucseg.png'],
+        x=0, y=0, anchor="bottom_left")
     v_headers, v_columns = read_csv(vessel_file_path)
     for i in range(0, len(v_headers)):
         v_columns[v_headers[i]] = [float(value) for value in v_columns[v_headers[i]]]
