@@ -78,11 +78,10 @@ for i in range(len(n_columns['ID'])):
     if n_columns['cell_type'][i] == 'Endothelial Cell':
         vessel_x_list.append(float(n_columns['X'][i]))
         vessel_y_list.append(float(n_columns['Y'][i]))
-    else:
-        nuclei_id_list.append(int(n_columns['ID'][i]))
-        nuclei_type_list.append(n_columns['cell_type'][i])
-        nuclei_x_list.append(float(n_columns['X'][i]))
-        nuclei_y_list.append(float(n_columns['Y'][i]))
+    nuclei_id_list.append(int(n_columns['ID'][i]))
+    nuclei_type_list.append(n_columns['cell_type'][i])
+    nuclei_x_list.append(float(n_columns['X'][i]))
+    nuclei_y_list.append(float(n_columns['Y'][i]))
 # nuclei_class_list = [int(value) for value in n_columns['Class']]
 
 # nuclei_image = io.imread('../images/nuclei_ml.png')  # [::-1, :]
